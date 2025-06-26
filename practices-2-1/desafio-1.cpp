@@ -1,4 +1,4 @@
-// TINKERCAD = https://www.tinkercad.com/things/9WcudXT0jED-desafio1arduino2jeanrondon
+// TINKERCAD ARDUINO = https://www.tinkercad.com/things/9WcudXT0jED-desafio1arduino2jeanrondon
 
 double R, T, logaritmoNaturalRes, unoSobreTemperaturaKelvin, porcentaje = 0.25, totalPorcentaje;
 
