@@ -1,3 +1,5 @@
+//  CIRCUITO ARDUINO = https://www.tinkercad.com/things/66B3d3MxwVa-desafio1arduinonivel3jeanrondon
+
 const int sensorHumedadPin = A0;
 const int relePin = 2;
 const int minHumedad = 250;
