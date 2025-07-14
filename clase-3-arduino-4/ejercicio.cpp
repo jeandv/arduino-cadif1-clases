@@ -1,3 +1,5 @@
+// CIRCUITO TINKERCAD = https://www.tinkercad.com/things/7H9jg37dUfO-clase3arduinoivjeanrondon
+
 // #include <Servo.h>
 
 // Servo motor1;
