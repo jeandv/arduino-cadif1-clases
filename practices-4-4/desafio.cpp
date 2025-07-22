@@ -1,19 +1,13 @@
-// CIRCUITO TINKERCAD = https://www.tinkercad.com/things/8p8Psofwgrk-desafio4arduinoivjeanrondon
-
 #include <LiquidCrystal_I2C.h>
 
 LiquidCrystal_I2C pantalla(0x20,16,2);
 
 const int PIN_SENSOR_HUMEDAD = A0;
 const int PIN_BOMBA_MOTOR = 2;
-const int PIN_SENSOR_TMP36 = A3;
-const int PIN_RELE_CALENTADOR = 3;
-
 int valorADCHumedad = 0;
 int porcentajeHumedad = 0;
 bool bombaActiva = false;
 bool bombaApagadaPorAltaHumedad = false;
-float temperaturaCelsius = 0;
 
 void setup() {
   Serial.begin(9600);
@@ -38,16 +32,11 @@ void setup() {
 
   pinMode(PIN_BOMBA_MOTOR, OUTPUT);
   digitalWrite(PIN_BOMBA_MOTOR, 0);
-
-  pinMode(PIN_RELE_CALENTADOR, OUTPUT);
-  digitalWrite(PIN_RELE_CALENTADOR, 0);
 }
 
 void loop() {
   leerActualizarHumedad();
   controlarMotor();
-  leerActualizarTemperatura();
-  controlarCalentador();
   actualizarLCD();
   
   delay(100);
@@ -95,14 +84,16 @@ void usarMotorIntermitente(long tiempoEncendido, long tiempoApagado) {
   
   bombaActiva = false;
   digitalWrite(PIN_BOMBA_MOTOR, 0);
+  actualizarLCD(); 
   leerActualizarHumedad(); 
+
 }
 
 void controlarMotor() {
   if (porcentajeHumedad > 80) {
     bombaApagadaPorAltaHumedad = true;
-    bombaActiva = false;
     digitalWrite(PIN_BOMBA_MOTOR, 0);
+    bombaActiva = false;
   }
 
   if (bombaApagadaPorAltaHumedad && porcentajeHumedad < 10)
@@ -149,87 +140,24 @@ void controlarMotor() {
     }
     
   } else {
-    bombaActiva = false;
+    
     digitalWrite(PIN_BOMBA_MOTOR, 0);
+    bombaActiva = false;
     Serial.println("Humedad mayor a 80% - Motor Bomba Apagada (Esperando Humedad < 10%)");
-  
-  }
-}
-
-void leerActualizarTemperatura() {
-  int valorADCTMP36 = analogRead(PIN_SENSOR_TMP36);
-  float voltaje = valorADCTMP36 * (5.0 / 1024.0);
-  temperaturaCelsius = (voltaje - 0.5) * 100;
-
-  Serial.print("Temperatura: ");
-  Serial.print(temperaturaCelsius, 1);
-  Serial.println(" C");
-}
-
-void controlarCalentador() {
-  leerActualizarTemperatura();
-  actualizarLCD();
-
-  if (temperaturaCelsius < 50) {
-    
-    Serial.println("Temperatura < 50C - Calentador ENCENDIDO");
-    digitalWrite(PIN_RELE_CALENTADOR, 1);
-    actualizarLCD();
-
-    while (temperaturaCelsius < 50) {
-      leerActualizarTemperatura();
-      actualizarLCD();
-      delay(500);
-    }
-    
-    digitalWrite(PIN_RELE_CALENTADOR, 0);
-    Serial.println("Temperatura en rango (>=50C) - Calentador APAGADO");
-    actualizarLCD();  
-
-  } else if (temperaturaCelsius > 60) {
-    
-    Serial.println("Temperatura > 60C - Calentador APAGADO (Fuera de rango por arriba)");
-    digitalWrite(PIN_RELE_CALENTADOR, 0);
-    actualizarLCD();
-    
-  } else {
-    
-    Serial.println("Temperatura en rango (50-60C) - Calentador APAGADO");
-    digitalWrite(PIN_RELE_CALENTADOR, 0);
-    actualizarLCD();
   
   }
 }
 
 void actualizarLCD() {
   pantalla.setCursor(0, 0);
-  pantalla.print("Hum:");
+  pantalla.print("Humedad:    %");
+  pantalla.setCursor(9, 0);
   pantalla.print(porcentajeHumedad);
-  pantalla.print("% ");
 
   pantalla.setCursor(0, 1);
   
   if (bombaActiva)
-    pantalla.print("Bomba:ON   ");
+    pantalla.print("Motor Bomba: ON ");
   else
-    pantalla.print("Bomba:OFF  ");
-
-  if (bombaApagadaPorAltaHumedad) {
-    pantalla.setCursor(0, 1);
-    pantalla.print("Bomba:OFF");
-  }
-
-  pantalla.setCursor(8, 0);
-  pantalla.print("Temp:");
-  pantalla.print(temperaturaCelsius, 0);
-  pantalla.print("C  ");
-
-  pantalla.setCursor(10, 1);
-  
-  if (temperaturaCelsius >= 50 && temperaturaCelsius <= 60)
-    pantalla.print("C OK  ");
-  else if (temperaturaCelsius < 50)
-    pantalla.print("C BAJA");
-  else
-    pantalla.print("C ALTA");
+    pantalla.print("Motor Bomba: OFF ");
 }
